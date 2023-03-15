@@ -83,9 +83,29 @@ module OpenProject::GithubIntegration
       mount ::API::V3::GithubPullRequests::GithubPullRequestsByWorkPackageAPI
     end
 
+    add_api_endpoint 'API::V3::Root' do
+      mount ::API::V3::GithubPullRequests::GithubPullRequestsAPI
+    end
+
     config.to_prepare do
       # Register the cron job to clean up old github pull requests
       ::Cron::CronJob.register! ::Cron::ClearOldPullRequestsJob
     end
   end
+end
+
+def notes(title)
+  markdown_chars = %w|\\ ` * _ { } [ ] ( ) + - . !|
+  replaced = title
+    .gsub(Regexp.union(markdown_chars)) { |match| "\\#{match}" }
+    .gsub(/\#{1,3}/, '!\0')
+
+  "**PR Opened:** Pull request 21 [#{replaced}](https://github.com/opf/qa-integration-test/pull/21) for [opf/qa-integration-test](https://github.com/opf/qa-integration-test) has been opened by [RobinWagner](https://github.com/RobinWagner).\n"
+end
+
+def notes(title)
+  replaced = title
+    .gsub('`') { |match| "\\#{match}" }
+
+  "**PR Opened:** Pull request 21 [`#{replaced}`](https://github.com/opf/qa-integration-test/pull/21) for [opf/qa-integration-test](https://github.com/opf/qa-integration-test) has been opened by [RobinWagner](https://github.com/RobinWagner).\n"
 end
