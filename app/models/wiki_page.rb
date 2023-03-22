@@ -29,7 +29,8 @@
 class WikiPage < ApplicationRecord
   belongs_to :wiki, touch: true
   has_one :project, through: :wiki
-  has_one :content, class_name: 'WikiContent', foreign_key: 'page_id', dependent: :destroy
+  belongs_to :author, class_name: 'User'
+
   acts_as_attachable delete_permission: :delete_wiki_pages_attachments
   acts_as_tree dependent: :nullify, order: 'title'
 
@@ -46,10 +47,12 @@ class WikiPage < ApplicationRecord
                 description: :text,
                 url: Proc.new { |o| { controller: '/wiki', action: 'show', project_id: o.wiki.project, id: o.title } }
 
-  acts_as_searchable columns: ["#{WikiPage.table_name}.title", "#{WikiContent.table_name}.text"],
-                     include: [{ wiki: :project }, :content],
-                     references: %i[wikis wiki_contents],
+  acts_as_searchable columns: %W[#{WikiPage.table_name}.title text],
+                     include: [{ wiki: :project }],
+                     references: %i[wikis],
                      project_key: "#{Wiki.table_name}.project_id"
+
+  acts_as_journalized
 
   attr_accessor :redirect_existing_links
 
@@ -60,7 +63,6 @@ class WikiPage < ApplicationRecord
                 I18n.t('activerecord.errors.models.wiki_page.attributes.slug.undeducible', title: object.title)
               }
             }
-  validates_associated :content
 
   validate :validate_consistency_of_parent_title
   validate :validate_non_circular_dependency
@@ -160,33 +162,14 @@ class WikiPage < ApplicationRecord
     content_to && content_from ? Wikis::Diff.new(content_to, content_from) : nil
   end
 
+  def version
+    last_journal.nil? ? 0 : last_journal.version
+  end
+
   def annotate(version = nil)
     version = version ? version.to_i : content.version
     c = content.journals.find_by(version:)
     c ? Wikis::Annotate.new(c) : nil
-  end
-
-  def text
-    content&.text
-  end
-
-  def updated_at
-    unless @updated_at
-      if (time = read_attribute(:updated_at))
-        # content updated_at was eager loaded with the page
-        unless time.is_a? Time
-          time = begin
-            Time.zone.parse(time)
-          rescue StandardError
-            nil
-          end
-        end
-        @updated_at = time
-      else
-        @updated_at = content&.updated_at
-      end
-    end
-    @updated_at
   end
 
   # Returns true if usr is allowed to edit the page, otherwise false
@@ -229,16 +212,6 @@ class WikiPage < ApplicationRecord
 
   def to_param
     slug || WikiPage.slug(title)
-  end
-
-  def save_with_content
-    if valid? && content.valid?
-      ActiveRecord::Base.transaction do
-        save!
-        content.save!
-      end
-      true
-    end
   end
 
   def only_wiki_page?

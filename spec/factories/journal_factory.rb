@@ -41,9 +41,9 @@ FactoryBot.define do
       end
     end
 
-    factory :wiki_content_journal, class: 'Journal' do
-      journable_type { 'WikiContent' }
-      data { build(:journal_wiki_content_journal) }
+    factory :wiki_page_journal, class: 'Journal' do
+      journable_type { 'WikiPage' }
+      data { build(:journal_wiki_page_journal) }
     end
 
     factory :message_journal, class: 'Journal' do

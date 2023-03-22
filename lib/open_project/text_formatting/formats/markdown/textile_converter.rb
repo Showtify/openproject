@@ -276,7 +276,7 @@ module OpenProject::TextFormatting::Formats
           ::Project => [:description],
           ::Journal => [:notes],
           ::Journal::MessageJournal => [:content],
-          ::Journal::WikiContentJournal => [:text],
+          ::Journal::WikiPageJournal => [:text],
           ::Journal::WorkPackageJournal => [:description],
           ::AttributeHelpText => [:help_text]
         }

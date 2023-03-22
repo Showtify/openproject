@@ -70,7 +70,7 @@ module Users
         { class: Project, column: :description },
         { class: Projects::Status, column: :explanation },
         { class: WikiContent, column: :text },
-        { class: Journal::WikiContentJournal, column: :text }
+        { class: Journal::WikiPageJournal, column: :text }
       ]
     end
 

@@ -326,7 +326,7 @@ describe Principals::ReplaceReferencesService, '#call', type: :model do
       end
 
       it_behaves_like 'rewritten record',
-                      :journal_wiki_content_journal,
+                      :journal_wiki_page_journal,
                       :author_id do
         let(:attributes) do
           { page_id: 1 }

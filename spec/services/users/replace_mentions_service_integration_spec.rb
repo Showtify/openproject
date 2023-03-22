@@ -415,7 +415,7 @@ describe Users::ReplaceMentionsService, 'integration' do
   end
 
   context 'for wiki_content_journals text' do
-    it_behaves_like 'rewritten mention', :journal_wiki_content_journal, :text
+    it_behaves_like 'rewritten mention', :journal_wiki_page_journal, :text
   end
 
   context 'for a group for to' do

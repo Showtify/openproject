@@ -37,12 +37,7 @@ describe WikiController do
   shared_let(:wiki) { project.wiki }
 
   shared_let(:existing_page) do
-    create(:wiki_page, wiki_id: project.wiki.id, title: 'ExistingPage')
-  end
-
-  shared_let(:existing_content) do
-    # creating page contents
-    create(:wiki_content, page_id: existing_page.id, author_id: admin.id)
+    create(:wiki_page, wiki_id: project.wiki.id, title: 'ExistingPage', author: admin)
   end
 
   describe 'actions' do
