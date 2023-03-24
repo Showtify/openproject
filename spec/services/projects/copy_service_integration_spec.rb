@@ -39,8 +39,8 @@ describe Projects::CopyService, 'integration', type: :model do
   shared_let(:source_view) { create(:view_work_packages_table, query: source_query) }
   shared_let(:source_category) { create(:category, project: source, name: 'Stock management') }
   shared_let(:source_version) { create(:version, project: source, name: 'Version A') }
-  shared_let(:source_wiki_page) { create(:wiki_page_with_content, wiki: source.wiki) }
-  shared_let(:source_child_wiki_page) { create(:wiki_page_with_content, wiki: source.wiki, parent: source_wiki_page) }
+  shared_let(:source_wiki_page) { create(:wiki_page, wiki: source.wiki) }
+  shared_let(:source_child_wiki_page) { create(:wiki_page, wiki: source.wiki, parent: source_wiki_page) }
   shared_let(:source_forum) { create(:forum, project: source) }
   shared_let(:source_topic) { create(:message, forum: source_forum) }
 

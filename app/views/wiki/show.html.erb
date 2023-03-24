@@ -28,7 +28,7 @@ See COPYRIGHT and LICENSE files for more details.
 ++#%>
 
 <%= call_hook :wiki_navigation %>
-<% if @content.version != @page.content.version %>
+<% if @content.version != @page.version %>
   <% title = link_to(h(@page.title), {action: 'show', id: @page, project_id: @page.project}).html_safe %>
 <% else %>
   <% title = h(@page.title) %>
@@ -59,7 +59,7 @@ See COPYRIGHT and LICENSE files for more details.
         </li>
       <% end %>
     <% end %>
-    <% if @content.version == @page.content.version %>
+    <% if @content.version == @page.version %>
       <li class="toolbar-item">
         <%= link_to_if_authorized({ action: 'edit', id: @page },
                                   { aria: { label: t(:button_edit) },
@@ -73,7 +73,7 @@ See COPYRIGHT and LICENSE files for more details.
     <li class="toolbar-item hidden-for-mobile">
       <%= watcher_link(@page, User.current) %>
     </li>
-    <% if @content.version != @page.content.version %>
+    <% if @content.version != @page.version %>
       <li class="toolbar-item  hidden-for-mobile">
         <%= link_to(t(:label_history), {action: 'history', id: @page}, class: 'button icon-wiki') %>
       </li>
@@ -89,7 +89,7 @@ See COPYRIGHT and LICENSE files for more details.
       <% if @editable %>
         <%= li_unless_nil(link_to_if_authorized(t(:button_lock), {action: 'protect', id: @page, protected: 1}, method: :post, class: 'icon-context icon-locked')) if !@page.protected? %>
         <%= li_unless_nil(link_to_if_authorized(t(:button_unlock), {action: 'protect', id: @page, protected: 0}, method: :post, class: 'icon-context icon-unlocked')) if @page.protected? %>
-        <% if @content.version == @page.content.version %>
+        <% if @content.version == @page.version %>
           <%= li_unless_nil(link_to_if_authorized(t(:button_rename),
                                                   {action: 'rename', id: @page},
                                                   class: 'icon-context icon-rename')) %>
@@ -98,7 +98,7 @@ See COPYRIGHT and LICENSE files for more details.
                                                   class: 'icon-context icon-link')) %>
         <% end %>
         <%= li_unless_nil(link_to_if_authorized(t(:button_delete), {action: 'destroy', id: @page}, method: :delete, data: { confirm: t(:text_are_you_sure) }, class: 'icon-context icon-delete')) %>
-        <%= li_unless_nil(link_to_if_authorized(t(:button_rollback), {action: 'edit', id: @page, version: @content.version }, class: 'icon-context icon-cancel')) if @content.version < @page.content.version %>
+        <%= li_unless_nil(link_to_if_authorized(t(:button_rollback), {action: 'edit', id: @page, version: @content.version }, class: 'icon-context icon-cancel')) if @content.version < @page.version %>
       <% end %>
       <%= li_unless_nil(link_to_if_authorized(t(:label_history), {action: 'history', id: @page}, class: 'icon-context icon-activity-history')) %>
       <%= li_unless_nil(link_to_if_authorized(t(:button_manage_menu_entry), {controller: '/wiki_menu_items', action: 'edit', project_id: @project.identifier, id: @page}, class: 'icon-context icon-settings')) %>

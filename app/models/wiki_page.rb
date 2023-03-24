@@ -137,17 +137,19 @@ class WikiPage < ApplicationRecord
     wiki.redirects.where(redirects_to: slug).find_each(&:destroy)
   end
 
-  def content_for_version(version = nil)
-    journal = content.journals.find_by(version: version.to_i) if version
+  def text_at_version(version = nil)
+    journal = journals.find_by(version: version.to_i) if version
 
-    if journal.nil? || content.version == journal.version
-      content
+    if journal.nil? || version == journal.version
+      self
     else
-      content_version = WikiContent.new journal.data.attributes.except('id', 'journal_id')
-      content_version.updated_at = journal.created_at
-      content_version.journals = content.journals.select { |j| j.version <= version.to_i }
+      at_version = new attributes
+                         .merge(journal.data.attributes.except('id', 'journal_id'))
+                         .merge(updated_at: journal.created_at)
+                         .merge(lock_version: journal.version)
 
-      content_version
+      at_version.journals = journals.select { |j| j.version <= version.to_i }
+      at_version
     end
   end
 
@@ -156,8 +158,8 @@ class WikiPage < ApplicationRecord
     version_from = version_from ? version_from.to_i : version_to - 1
     version_to, version_from = version_from, version_to unless version_from < version_to
 
-    content_to = content.journals.find_by(version: version_to)
-    content_from = content.journals.find_by(version: version_from)
+    content_to = journals.find_by(version: version_to)
+    content_from = journals.find_by(version: version_from)
 
     content_to && content_from ? Wikis::Diff.new(content_to, content_from) : nil
   end
@@ -166,9 +168,9 @@ class WikiPage < ApplicationRecord
     last_journal.nil? ? 0 : last_journal.version
   end
 
-  def annotate(version = nil)
-    version = version ? version.to_i : content.version
-    c = content.journals.find_by(version:)
+  def annotate(compare_version = nil)
+    compare_version = compare_version ? compare_version.to_i : version
+    c = journals.find_by(version: compare_version)
     c ? Wikis::Annotate.new(c) : nil
   end
 

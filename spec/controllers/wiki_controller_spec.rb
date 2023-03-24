@@ -83,12 +83,13 @@ describe WikiController do
         expect(assigns[:page].wiki).to eq(project.wiki)
       end
 
+      # TODO: remove
       it 'assigns @content to a newly created wiki content' do
         get_page
 
         expect(assigns[:content]).to be_new_record
-        expect(assigns[:content]).to be_a WikiContent
-        expect(assigns[:content].page).to eq(assigns[:page])
+        expect(assigns[:content]).to be_a WikiPage
+        expect(assigns[:content].wiki).to eq(project.wiki)
       end
 
       it 'renders the new action' do
@@ -152,7 +153,7 @@ describe WikiController do
 
         it 'assigns the content' do
           expect(assigns[:content])
-            .to eql existing_content
+            .to eql existing_page
         end
       end
 
@@ -178,9 +179,10 @@ describe WikiController do
             .to be_new_record
         end
 
+        # TODO: remove
         it 'assigns a new content that is unpersisted' do
           expect(assigns[:content])
-            .to be_a WikiContent
+            .to be_a WikiPage
 
           expect(assigns[:content])
             .to be_new_record
@@ -209,9 +211,10 @@ describe WikiController do
             .to be_new_record
         end
 
+        # TODO: remove
         it 'assigns a new content that is unpersisted' do
           expect(assigns[:content])
-            .to be_a WikiContent
+            .to be_a WikiPage
 
           expect(assigns[:content])
             .to be_new_record
@@ -242,7 +245,7 @@ describe WikiController do
 
         it 'assigns the wiki start page content' do
           expect(assigns[:content])
-            .to eql existing_content
+            .to eql existing_page
         end
       end
 
@@ -396,7 +399,7 @@ describe WikiController do
 
           page = project.wiki.pages.find_by title: 'abc'
           expect(page).not_to be_nil
-          expect(page.content.text).to eq('h1. abc')
+          expect(page.text).to eq('h1. abc')
         end
       end
 
@@ -453,7 +456,7 @@ describe WikiController do
                }
 
           expect(assigns[:content]).to be_new_record
-          expect(assigns[:content].page.wiki.project).to eq(project)
+          expect(assigns[:content].wiki.project).to eq(project)
           expect(assigns[:content].text).to eq('h1. abc')
         end
       end
@@ -510,7 +513,7 @@ describe WikiController do
 
       context 'when it is the only wiki page' do
         before do
-          WikiPage.where.not(id: existing_page.id).destroy_all
+          WikiPage.where.not(id: existing_page.id).delete_all
         end
 
         it 'redirects to projects#show' do
@@ -768,12 +771,12 @@ describe WikiController do
     end
 
     describe 'diffs' do
-      let!(:journal_from) { existing_content.journals.last }
+      let!(:journal_from) { existing_page.journals.last }
       let!(:journal_to) do
-        existing_content.text = 'new_text'
-        existing_content.save
+        existing_page.text = 'new_text'
+        existing_page.save
 
-        existing_content.journals.reload.last
+        existing_page.journals.reload.last
       end
 
       let(:permissions) { %i[view_wiki_pages view_wiki_edits] }
@@ -818,12 +821,12 @@ describe WikiController do
     end
 
     describe 'annotates' do
-      let!(:journal_from) { existing_content.journals.last }
+      let!(:journal_from) { existing_page.journals.last }
       let!(:journal_to) do
-        existing_content.text = 'new_text'
-        existing_content.save
+        existing_page.text = 'new_text'
+        existing_page.save
 
-        existing_content.journals.reload.last
+        existing_page.journals.reload.last
       end
 
       let(:permissions) { %i[view_wiki_pages view_wiki_edits] }
@@ -983,7 +986,7 @@ describe WikiController do
 
       it 'assigns versions' do
         expect(assigns[:versions])
-          .to eq existing_content.journals
+          .to eq existing_page.journals
       end
 
       context 'for a non existing page' do
@@ -1022,36 +1025,25 @@ describe WikiController do
       # creating pages
       @page_default = create(:wiki_page,
                              wiki_id: project.wiki.id,
-                             title: 'Wiki')
+                             title: 'Wiki',
+                             author_id: admin.id)
       @page_with_content = create(:wiki_page,
                                   wiki_id: project.wiki.id,
-                                  title: 'PagewithContent')
-      @page_without_content = create(:wiki_page,
-                                     wiki_id: project.wiki.id,
-                                     title: 'PagewithoutContent')
+                                  title: 'PagewithContent',
+                                  author_id: admin.id)
       @unrelated_page = create(:wiki_page,
                                wiki_id: project.wiki.id,
-                               title: 'UnrelatedPage')
-
-      # creating page contents
-      create(:wiki_content, page_id: @page_default.id,
-                            author_id: admin.id)
-      create(:wiki_content, page_id: @page_with_content.id,
-                            author_id: admin.id)
-      create(:wiki_content, page_id: @unrelated_page.id,
-                            author_id: admin.id)
+                               title: 'UnrelatedPage',
+                               author_id: admin.id)
 
       # creating some child pages
-      @children = {}
-      [@page_with_content].each do |page|
-        child_page = create(:wiki_page, wiki_id: project.wiki.id,
-                                        parent_id: page.id,
-                                        title: page.title + ' child')
-        create(:wiki_content, page_id: child_page.id,
-                              author_id: admin.id)
-
-        @children[page] = child_page
-      end
+      @children = {
+        @page_with_content => create(:wiki_page,
+                                     wiki_id: project.wiki.id,
+                                     parent_id: @page_with_content.id,
+                                     title: @page_with_content.title + ' child',
+                                     author_id: admin.id)
+      }
     end
 
     describe '- main menu links' do

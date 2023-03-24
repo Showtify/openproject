@@ -53,7 +53,7 @@ class WikiController < ApplicationController
                                               destroy]
   before_action :find_wiki_page, only: %i[show]
   before_action :handle_new_wiki_page, only: %i[show]
-  before_action :build_wiki_page_and_content, only: %i[new create]
+  before_action :build_wiki_page_and_content, only: %i[new]
 
   include AttachableServiceCall
   include AttachmentsHelper
@@ -93,7 +93,7 @@ class WikiController < ApplicationController
       redirect_to version: nil
       return
     end
-    @content = @page.content_for_version(params[:version])
+    @content = @page.text_at_version(params[:version])
     if params[:format] == 'markdown' && User.current.allowed_to?(:export_wiki_pages, @project)
       send_data(@content.text, type: 'text/plain', filename: "#{@page.title}.md")
       return
@@ -122,13 +122,9 @@ class WikiController < ApplicationController
 
     if @page.new_record?
       @page.parent_id = flash[:_related_wiki_page_id] if flash[:_related_wiki_page_id]
-      @page.content = WikiContent.new(page: @page)
     end
 
-    @content = @page.content_for_version(params[:version])
-
-    # To prevent StaleObjectError exception when reverting to a previous version
-    @content.lock_version = @page.content.lock_version
+    @content = @page.text_at_version(params[:version])
   end
 
   def create
@@ -136,7 +132,8 @@ class WikiController < ApplicationController
                                   args: permitted_params.wiki_page_with_content.to_h.merge(wiki: @wiki)
 
     @page = call.result
-    @content = @page.content
+    # TODO: remove
+    @content = @page
 
     if call.success?
       call_hook(:controller_wiki_edit_after_save, params:, page: @page)
@@ -164,7 +161,6 @@ class WikiController < ApplicationController
                                   args: permitted_params.wiki_page_with_content.to_h
 
     @page = call.result
-    @content = @page.content
 
     if call.success?
       call_hook(:controller_wiki_edit_after_save, params:, page: @page)
@@ -252,7 +248,6 @@ class WikiController < ApplicationController
   def history
     # don't load text
     @versions = @page
-                .content
                 .journals
                 .select(:id, :user_id, :notes, :created_at, :version)
                 .order(Arel.sql('version DESC'))
@@ -402,14 +397,13 @@ class WikiController < ApplicationController
   end
 
   def build_wiki_page_and_content
-    @page = WikiPage.new wiki: @wiki, title: wiki_page_title.presence
-    @page.content = WikiContent.new page: @page
+    @page = WikiPages::SetAttributesService
+            .new(model: WikiPage.new, user: current_user, contract_class: WikiPages::CreateContract)
+            .call(wiki: @wiki, title: wiki_page_title.presence, parent_id: flash[:_related_wiki_page_id])
+            .result
 
-    if flash[:_related_wiki_page_id]
-      @page.parent_id = flash[:_related_wiki_page_id]
-    end
-
-    @content = @page.content_for_version nil
+    # TODO: remove
+    @content = @page
   end
 
   # Returns true if the current user is allowed to edit the page, otherwise false

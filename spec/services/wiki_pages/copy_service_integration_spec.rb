@@ -57,7 +57,7 @@ describe WikiPages::CopyService, 'integration', type: :model do
   let(:sink_wiki) { create(:wiki) }
   let(:sink_project) { sink_wiki.project }
 
-  let(:wiki_page) { create(:wiki_page_with_content) }
+  let(:wiki_page) { create(:wiki_page) }
 
   let(:instance) { described_class.new(model: wiki_page, user:) }
 

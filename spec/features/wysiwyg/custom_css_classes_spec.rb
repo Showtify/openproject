@@ -35,7 +35,7 @@ describe 'Wysiwyg paragraphs in lists behavior (Regression #28765)',
   let(:editor) { Components::WysiwygEditor.new }
 
   let(:wiki_page) do
-    page = build(:wiki_page_with_content)
+    page = build(:wiki_page)
     page.content.text = <<~MARKDOWN
       paragraph
 

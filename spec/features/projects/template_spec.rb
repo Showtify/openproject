@@ -64,7 +64,7 @@ describe 'Project templates', js: true do
     let!(:template_status) { create(:project_status, project: template, explanation: 'source') }
     let!(:other_project) { create(:project, name: 'Some other project') }
     let!(:work_package) { create(:work_package, project: template) }
-    let!(:wiki_page) { create(:wiki_page_with_content, wiki: template.wiki) }
+    let!(:wiki_page) { create(:wiki_page, wiki: template.wiki) }
 
     let!(:role) do
       create(:role, permissions: %i[view_project view_work_packages copy_projects add_subprojects])
