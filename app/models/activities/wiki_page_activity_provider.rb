@@ -26,12 +26,12 @@
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-class Activities::WikiContentActivityProvider < Activities::BaseActivityProvider
+class Activities::WikiPageActivityProvider < Activities::BaseActivityProvider
   activity_provider_for type: 'wiki_edits',
                         permission: :view_wiki_edits
 
   def extend_event_query(query)
-    query.join(wiki_pages_table).on(activity_journals_table[:page_id].eq(wiki_pages_table[:id]))
+    query.join(wiki_pages_table).on(journals_table[:journable_id].eq(wiki_pages_table[:id]))
     query.join(wikis_table).on(wiki_pages_table[:wiki_id].eq(wikis_table[:id]))
   end
 

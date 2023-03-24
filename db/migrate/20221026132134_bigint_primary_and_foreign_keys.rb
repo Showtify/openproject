@@ -93,7 +93,7 @@ class BigintPrimaryAndForeignKeys < ActiveRecord::Migration[7.0]
     Webhooks::Project => %i[id project_id webhooks_webhook_id],
     Webhooks::Webhook => [:id],
     :wiki_content_journals => %i[id page_id author_id],
-    WikiContent => %i[id page_id author_id],
+    :wiki_contents => %i[id page_id author_id],
     WikiPage => %i[id wiki_id parent_id],
     WikiRedirect => %i[id wiki_id],
     Wiki => %i[id project_id],

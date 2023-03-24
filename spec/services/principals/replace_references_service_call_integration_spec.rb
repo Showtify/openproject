@@ -313,7 +313,7 @@ describe Principals::ReplaceReferencesService, '#call', type: :model do
       end
     end
 
-    context 'with WikiContent' do
+    context 'with WikiPage' do
       it_behaves_like 'rewritten record',
                       :wiki_content,
                       :author_id do
