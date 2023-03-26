@@ -121,8 +121,8 @@ describe Projects::CopyService, 'integration', type: :model do
       expect(project_copy.queries.count).to eq 1
       expect(project_copy.queries[0].views.count).to eq 1
       expect(project_copy.versions.count).to eq 1
-      expect(project_copy.wiki.pages.root.content.text).to eq source_wiki_page.content.text
-      expect(project_copy.wiki.pages.leaves.first.content.text).to eq source_child_wiki_page.content.text
+      expect(project_copy.wiki.pages.root.text).to eq source_wiki_page.text
+      expect(project_copy.wiki.pages.leaves.first.text).to eq source_child_wiki_page.text
       expect(project_copy.wiki.start_page).to eq 'Wiki'
 
       # Cleared attributes
@@ -288,15 +288,6 @@ describe Projects::CopyService, 'integration', type: :model do
     end
 
     describe '#copy_wiki' do
-      it 'will not copy wiki pages without content' do
-        source.wiki.pages << create(:wiki_page)
-        expect(source.wiki.pages.count).to eq 3
-
-        expect(subject).to be_success
-        expect(subject.errors).to be_empty
-        expect(project_copy.wiki.pages.count).to eq 2
-      end
-
       it 'will copy menu items' do
         source.wiki.wiki_menu_items << create(:wiki_menu_item_with_parent, wiki: source.wiki)
 

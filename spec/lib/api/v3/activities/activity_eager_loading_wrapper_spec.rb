@@ -98,7 +98,7 @@ RSpec.describe API::V3::Activities::ActivityEagerLoadingWrapper, with_settings: 
     end
 
     it 'can wrap WikiPage journals' do
-      wiki_content = create(:wiki_content, author: user)
+      wiki_content = create(:wiki_page, author: user)
       expect(wiki_content.journals).to be_wrappable
     end
 
