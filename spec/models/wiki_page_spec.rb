@@ -38,7 +38,7 @@ describe WikiPage do
   let(:new_wiki_page) { build(:wiki_page, wiki:, title:) }
 
   it_behaves_like 'acts_as_watchable included' do
-    let(:model_instance) { create(:wiki_page, author: nil) }
+    let(:model_instance) { create(:wiki_page) }
     let(:watch_permission) { :view_wiki_pages }
     let(:project) { model_instance.project }
   end

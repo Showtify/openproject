@@ -32,7 +32,8 @@ describe 'wiki/new' do
   let(:project) { build_stubbed(:project) }
   let(:wiki)    { build_stubbed(:wiki, project:) }
   let(:page)    { build_stubbed(:wiki_page, wiki:, title: 'foo') }
-  let(:content) { page.content }
+  # TODO: remove
+  let(:content) { page }
   let(:user)    { build_stubbed(:user) }
 
   before do

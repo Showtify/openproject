@@ -36,7 +36,7 @@ describe 'Wysiwyg paragraphs in lists behavior (Regression #28765)',
 
   let(:wiki_page) do
     page = build(:wiki_page)
-    page.content.text = <<~MARKDOWN
+    page.text = <<~MARKDOWN
       paragraph
 
       # h1

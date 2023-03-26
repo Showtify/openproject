@@ -93,7 +93,7 @@ class WikiController < ApplicationController
       redirect_to version: nil
       return
     end
-    @content = @page.text_at_version(params[:version])
+    @content = @page.at_version(params[:version])
     if params[:format] == 'markdown' && User.current.allowed_to?(:export_wiki_pages, @project)
       send_data(@content.text, type: 'text/plain', filename: "#{@page.title}.md")
       return
@@ -120,11 +120,11 @@ class WikiController < ApplicationController
     @page = @wiki.find_or_new_page(wiki_page_title)
     return render_403 unless editable?
 
-    if @page.new_record?
-      @page.parent_id = flash[:_related_wiki_page_id] if flash[:_related_wiki_page_id]
+    if @page.new_record? && flash[:_related_wiki_page_id]
+      @page.parent_id = flash[:_related_wiki_page_id]
     end
 
-    @content = @page.text_at_version(params[:version])
+    @content = @page.at_version(params[:version])
   end
 
   def create

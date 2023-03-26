@@ -94,7 +94,6 @@ class MergeWikiContentIntoPage < ActiveRecord::Migration[7.0]
       t.index %i[page_id updated_at]
     end
 
-
     rename_table :wiki_content_journals, :wiki_page_journals
 
     remove_column :wiki_page_journals, :page_id, :bigint

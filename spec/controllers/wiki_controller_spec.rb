@@ -1009,6 +1009,34 @@ describe WikiController do
       create(:public_project).tap(&:reload)
     end
 
+    # creating pages
+    let!(:page_with_content) do
+      create(:wiki_page,
+             wiki_id: project.wiki.id,
+             title: 'PagewithContent',
+             author_id: admin.id)
+    end
+    let!(:page_default) do
+      create(:wiki_page,
+             wiki_id: project.wiki.id,
+             title: 'Wiki',
+             author_id: admin.id)
+    end
+    let!(:unrelated_page) do
+      create(:wiki_page,
+             wiki_id: project.wiki.id,
+             title: 'UnrelatedPage',
+             author_id: admin.id)
+    end
+
+    let(:child_page) do
+      create(:wiki_page,
+             wiki_id: project.wiki.id,
+             parent_id: page_with_content.id,
+             title: "#{page_with_content.title} child",
+             author_id: admin.id)
+    end
+
     before do
       allow(@controller).to receive(:set_localization)
       allow(Setting).to receive(:login_required?).and_return(false)
@@ -1019,39 +1047,16 @@ describe WikiController do
 
       Role.anonymous.update name: I18n.t(:default_role_anonymous),
                             permissions: [:view_wiki_pages]
-
-      allow(User).to receive(:current).and_return admin
-
-      # creating pages
-      @page_default = create(:wiki_page,
-                             wiki_id: project.wiki.id,
-                             title: 'Wiki',
-                             author_id: admin.id)
-      @page_with_content = create(:wiki_page,
-                                  wiki_id: project.wiki.id,
-                                  title: 'PagewithContent',
-                                  author_id: admin.id)
-      @unrelated_page = create(:wiki_page,
-                               wiki_id: project.wiki.id,
-                               title: 'UnrelatedPage',
-                               author_id: admin.id)
-
-      # creating some child pages
-      @children = {
-        @page_with_content => create(:wiki_page,
-                                     wiki_id: project.wiki.id,
-                                     parent_id: @page_with_content.id,
-                                     title: @page_with_content.title + ' child',
-                                     author_id: admin.id)
-      }
     end
+
+    current_user { admin }
 
     describe '- main menu links' do
       before do
         @main_menu_item_for_page_with_content = create(:wiki_menu_item,
                                                        navigatable_id: project.wiki.id,
                                                        title: 'Item for Page with Content',
-                                                       name: @page_with_content.slug)
+                                                       name: page_with_content.slug)
 
         @main_menu_item_for_new_wiki_page = create(:wiki_menu_item,
                                                    navigatable_id: project.wiki.id,
@@ -1061,12 +1066,12 @@ describe WikiController do
         @other_menu_item = create(:wiki_menu_item,
                                   navigatable_id: project.wiki.id,
                                   title: 'Item for other page',
-                                  name: @unrelated_page.slug)
+                                  name: unrelated_page.slug)
       end
 
       shared_examples_for 'all wiki menu items' do
         it 'is inactive, when an unrelated page is shown' do
-          get 'show', params: { id: @unrelated_page.slug, project_id: project.id }
+          get 'show', params: { id: unrelated_page.slug, project_id: project.id }
 
           expect(response).to be_successful
 
@@ -1114,7 +1119,7 @@ describe WikiController do
 
       shared_examples_for 'all wiki menu items with child pages' do
         it 'is active, when the given wiki menu item is an ancestor of the shown page' do
-          get 'show', params: { id: @child_page.slug, project_id: project.id }
+          get 'show', params: { id: child_page.slug, project_id: project.id }
 
           expect(response).to be_successful
           expect(response.body).to have_selector('#main-menu a.selected', count: 1)
@@ -1127,7 +1132,6 @@ describe WikiController do
         before do
           @wiki_menu_item = @main_menu_item_for_page_with_content
           @other_wiki_menu_item = @other_menu_item
-          @child_page = @children[@page_with_content]
         end
 
         it_behaves_like 'all wiki menu items'
@@ -1218,14 +1222,14 @@ describe WikiController do
             describe 'with a wiki page present' do
               it 'is visible' do
                 get 'show',
-                    params: { id: @page_with_content.title, project_id: project.identifier }
+                    params: { id: page_with_content.title, project_id: project.identifier }
 
                 expect(response).to be_successful
 
                 # Expect to set back ref id
-                expect(flash[:_related_wiki_page_id]).to eq @page_with_content.id
+                expect(flash[:_related_wiki_page_id]).to eq page_with_content.id
 
-                path = new_child_project_wiki_path(project_id: project, id: @page_with_content.slug)
+                path = new_child_project_wiki_path(project_id: project, id: page_with_content.slug)
 
                 assert_select "#content a[href='#{path}']", 'Wiki page'
               end
@@ -1249,7 +1253,7 @@ describe WikiController do
             end
 
             it 'is invisible' do
-              get 'show', params: { id: @page_with_content.title, project_id: project.identifier }
+              get 'show', params: { id: page_with_content.title, project_id: project.identifier }
 
               expect(response).to be_successful
 

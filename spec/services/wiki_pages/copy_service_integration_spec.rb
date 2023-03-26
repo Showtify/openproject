@@ -88,12 +88,12 @@ describe WikiPages::CopyService, 'integration', type: :model do
         expect(copy.id).not_to eq(wiki_page.id)
       end
 
-      it 'copies the content' do
-        expect(copy.content.text).to eq(wiki_page.content.text)
+      it 'copies the text' do
+        expect(copy.text).to eq(wiki_page.text)
       end
 
       it 'sets the author to be the current user' do
-        expect(copy.content.author).to eq(user)
+        expect(copy.author).to eq(user)
       end
 
       context 'with attachments' do

@@ -137,17 +137,13 @@ class WikiPage < ApplicationRecord
     wiki.redirects.where(redirects_to: slug).find_each(&:destroy)
   end
 
-  def text_at_version(version = nil)
+  def at_version(version = nil)
     journal = journals.find_by(version: version.to_i) if version
 
     if journal.nil? || version == journal.version
       self
     else
-      at_version = new attributes
-                         .merge(journal.data.attributes.except('id', 'journal_id'))
-                         .merge(updated_at: journal.created_at)
-                         .merge(lock_version: journal.version)
-
+      at_version = self.class.new(attributes_at_journal(journal))
       at_version.journals = journals.select { |j| j.version <= version.to_i }
       at_version
     end
@@ -232,5 +228,12 @@ class WikiPage < ApplicationRecord
 
   def validate_same_project
     errors.add(:parent_title, :not_same_project) if parent && (parent.wiki_id != wiki_id)
+  end
+
+  def attributes_at_journal(journal)
+    attributes
+      .except('id')
+      .merge(journal.data.attributes.except('id', 'journal_id'))
+      .merge(updated_at: journal.updated_at, lock_version: journal.version)
   end
 end

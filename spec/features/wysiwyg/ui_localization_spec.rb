@@ -36,7 +36,7 @@ describe 'WYSIWYG UI localization',
 
   let(:wiki_page) do
     page = build(:wiki_page)
-    page.content.text = <<~MARKDOWN
+    page.text = <<~MARKDOWN
       paragraph
 
       # h1

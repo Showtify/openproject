@@ -410,8 +410,8 @@ describe Users::ReplaceMentionsService, 'integration' do
     it_behaves_like 'rewritten mention', :project_status, :explanation
   end
 
-  context 'for wiki_content text' do
-    it_behaves_like 'rewritten mention', :wiki_content, :text
+  context 'for wiki_page text' do
+    it_behaves_like 'rewritten mention', :wiki_page, :text
   end
 
   context 'for wiki_content_journals text' do

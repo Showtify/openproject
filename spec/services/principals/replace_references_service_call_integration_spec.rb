@@ -315,11 +315,14 @@ describe Principals::ReplaceReferencesService, '#call', type: :model do
 
     context 'with WikiPage' do
       it_behaves_like 'rewritten record',
-                      :wiki_content,
+                      :wiki_page,
                       :author_id do
         let(:attributes) do
           {
-            page_id: 1,
+            wiki_id: 1,
+            title: "'Lorem'",
+            slug: "'lorem'",
+            updated_at: "'#{DateTime.current}'",
             lock_version: 5
           }
         end
@@ -328,9 +331,6 @@ describe Principals::ReplaceReferencesService, '#call', type: :model do
       it_behaves_like 'rewritten record',
                       :journal_wiki_page_journal,
                       :author_id do
-        let(:attributes) do
-          { page_id: 1 }
-        end
       end
     end
 

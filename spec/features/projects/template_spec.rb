@@ -156,7 +156,7 @@ describe 'Project templates', js: true do
       wiki_source = template.wiki.pages.first
       wiki_target = project.wiki.pages.first
       expect(wiki_source.title).to eq(wiki_target.title)
-      expect(wiki_source.content.text).to eq(wiki_target.content.text)
+      expect(wiki_source.text).to eq(wiki_target.text)
     end
   end
 end
